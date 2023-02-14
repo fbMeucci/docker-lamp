@@ -1,0 +1,40 @@
+version: "3"
+services: 
+  web:
+    build: .
+    networks:
+     - lamp-docker
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_DATABASE: lab
+      MYSQL_USER: lamp-docker
+      MYSQL_PASSWORD: password
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+    volumes:
+     - "./db:/docker-entrypoint-initdb.d"
+  www:
+    depends_on:
+     - db
+    image: php:7.2-apache
+    volumes:
+     - "./:/var/www/html"
+    networks:
+     - lamp-docker
+    ports:
+     - 80:80
+     - 443:443
+  phpmyadmin:
+    depends_on:
+     - db
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - 8001:80
+    environment:
+      - PMA_HOST=db
+      - PMA_PORT=3306 
+    networks:
+     - lamp-docker
+networks:
+  lamp-docker:
+    driver: bridge
